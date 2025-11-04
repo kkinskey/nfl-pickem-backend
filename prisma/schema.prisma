@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model games {
+  id                              Int          @id @default(autoincrement())
+  week_id                         Int
+  home_team_id                    Int
+  away_team_id                    Int
+  kickoff_at                      DateTime     @db.Timestamp(0)
+  status                          games_status @default(SCHEDULED)
+  final_home_score                Int?
+  final_away_score                Int?
+  external_game_id                String?      @db.VarChar(50)
+  source                          String?      @db.VarChar(50)
+  last_synced_at                  DateTime?    @db.Timestamp(0)
+  created_at DateTime @default(now())
+  teams_games_away_team_idToteams teams        @relation("games_away_team_idToteams", fields: [away_team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_away_team")
+  teams_games_home_team_idToteams teams        @relation("games_home_team_idToteams", fields: [home_team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_home_team")
+  weeks                           weeks        @relation(fields: [week_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_week")
+  picks                           picks[]
+
+  @@index([away_team_id], map: "fk_away_team")
+  @@index([home_team_id], map: "fk_home_team")
+  @@index([week_id], map: "fk_week")
+}
+
+model picks {
+  id           Int          @id @default(autoincrement())
+  user_id      Int
+  game_id      Int
+  winner       picks_winner
+  margin       Int          @default(0)
+  score        Int?
+  submitted_at DateTime @default(now())     // not nullable unless you really need it
+  updated_at   DateTime @updatedAt          // auto-updates when you modify the row
+  games        games        @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_game")
+  users        users        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user")
+
+  @@unique([user_id, game_id], map: "unique_user_game")
+  @@index([game_id], map: "fk_game")
+}
+
+model teams {
+  id                              Int     @id @default(autoincrement())
+  code                            String  @unique(map: "code") @db.VarChar(10)
+  name                            String  @db.VarChar(100)
+  conference                      String? @db.VarChar(50)
+  division                        String? @db.VarChar(50)
+  games_games_away_team_idToteams games[] @relation("games_away_team_idToteams")
+  games_games_home_team_idToteams games[] @relation("games_home_team_idToteams")
+}
+
+model users {
+  id            Int        @id @default(autoincrement())
+  email         String     @unique(map: "email") @db.VarChar(255)
+  password_hash String     @db.VarChar(255)
+  display_name  String?    @db.VarChar(100)
+  role          users_role @default(USER)
+  created_at DateTime @default(now())
+  picks         picks[]
+}
+
+model weeks {
+  id           Int       @id @default(autoincrement())
+  season       Int
+  week_number  Int
+  open_at      DateTime? @db.Timestamp(0)
+  lock_at      DateTime? @db.Timestamp(0)
+  is_finalized Boolean   @default(false)
+  created_at DateTime @default(now())
+  games        games[]
+
+  @@unique([season, week_number], map: "unique_season_week")
+}
+
+enum picks_winner {
+  HOME
+  AWAY
+}
+
+enum users_role {
+  USER
+  ADMIN
+}
+
+enum games_status {
+  SCHEDULED
+  IN_PROGRESS
+  FINAL
+}
