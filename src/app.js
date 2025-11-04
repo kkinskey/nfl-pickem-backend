@@ -4,6 +4,7 @@ import usersRouter from "./routes/users.js";
 import picksRouter from "./routes/picks.js";
 import weeksRouter from "./routes/weeks.js";
 import gamesRouter from "./routes/games.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use("/users", usersRouter);
 app.use("/picks", picksRouter);
 app.use("/weeks", weeksRouter);
 app.use("/games", gamesRouter);
+app.use("/admin", adminRouter);
 
 // Health check
 app.get("/healthz", (_req, res) => res.json({ ok: true }));
