@@ -27,7 +27,9 @@ router.get("/", async (req, res) => {
     // Calls the service function, getPicks(), and passes in filters (userId, season, week) to retrieve and shape pick data from database.
     const result = await getPicks({ userId, season, week });
     res.status(200).json(result);
-  } catch (e) {}
+  } catch (e) {
+    handleError(e, res);
+  }
 });
 
 // GET View 1 pick
@@ -39,13 +41,7 @@ router.get("/:id", async (req, res) => {
     const result = await getPickById({ pickId });
     res.status(200).json(result);
   } catch (e) {
-    const status =
-      e.message === "Invalid pick id"
-        ? 400
-        : e.message === "Pick not found"
-        ? 404
-        : 500;
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 
@@ -57,8 +53,7 @@ router.post("/add", async (req, res) => {
 
     res.status(201).json(newPick);
   } catch (e) {
-    const status = e.message.includes("already exists") ? 409 : 400;
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 
@@ -80,17 +75,7 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     // Step 11: Success response
     return res.status(200).json({ message: "Pick updated", pick: updatedPick });
   } catch (e) {
-    // Handle "record to update not found"
-    const status =
-      e.message === "Invalid pick id"
-        ? 400
-        : e.message === "Pick not found" || e.code === "P2025"
-        ? 404
-        : e.message.includes("access") || e.message.includes("edits")
-        ? 403
-        : 400;
-
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 

@@ -12,14 +12,7 @@ router.get("/:id", async (req, res) => {
     const result = await getGameById({ gameId });
     res.status(200).json(result);
   } catch (e) {
-    const status =
-      e.message === "Invalid game id"
-        ? 400
-        : e.message === "Game not found"
-        ? 404
-        : 500;
-
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 

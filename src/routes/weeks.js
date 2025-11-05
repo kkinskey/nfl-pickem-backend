@@ -10,8 +10,7 @@ router.get("/current", async (req, res) => {
 
     res.status(200).json(week);
   } catch (e) {
-    const status = e.message === "No current week found" ? 404 : 500;
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 
@@ -26,14 +25,7 @@ router.get("/:id/games", async (req, res) => {
 
     return res.status(200).json(schedule);
   } catch (e) {
-    const status =
-      e.message === "Invalid week id"
-        ? 400
-        : e.message === "Week not found"
-        ? 404
-        : 500;
-
-    res.status(status).json({ error: e.message });
+    handleError(e, res);
   }
 });
 
