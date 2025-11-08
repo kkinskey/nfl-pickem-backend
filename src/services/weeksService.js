@@ -67,3 +67,48 @@ export async function getWeekSchedule({ weekId }) {
     };
   });
 }
+
+export async function createWeek({
+  season,
+  week_number,
+  open_at,
+  lock_at,
+  is_finalized,
+  created_at,
+  user,
+}) {
+  // // Step 1: Validate that the user is the ADMIN
+  // //req.user.role retrieved from the JWT
+  // if (user.role !== "ADMIN") {
+  //   throw new Error("User does not have access to create week");
+  // }
+
+  // Step 2: prevent duplicate week
+  const existingWeek = await prisma.weeks.findFirst({
+    where: {
+      season: Number(season),
+      week_number: Number(week_number),
+    },
+  });
+
+  if (existingWeek) {
+    throw new Error("Week already created");
+  }
+
+  // Step 3: Create week in DB
+  return await prisma.weeks.create({
+    data: {
+      season: Number(season),
+      week_number: Number(week_number),
+    },
+    select: {
+      id: true,
+      season: true,
+      week_number: true,
+      open_at: true,
+      lock_at: true,
+      is_finalized: true,
+      created_at: true,
+    },
+  });
+}
