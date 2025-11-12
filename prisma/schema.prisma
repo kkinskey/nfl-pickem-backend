@@ -17,7 +17,7 @@ model games {
   status                          games_status @default(SCHEDULED)
   final_home_score                Int?
   final_away_score                Int?
-  external_game_id                String?      @db.VarChar(50)
+  external_game_id                String?      @unique @db.VarChar(50)
   source                          String?      @db.VarChar(50)
   last_synced_at                  DateTime?    @db.Timestamp(0)
   created_at DateTime @default(now())
@@ -65,6 +65,7 @@ model users {
   role          users_role @default(USER)
   created_at DateTime @default(now())
   picks         picks[]
+  standings    standings[]
 }
 
 model weeks {
@@ -76,9 +77,24 @@ model weeks {
   is_finalized Boolean   @default(false)
   created_at DateTime @default(now())
   games        games[]
+  standings    standings[]
 
   @@unique([season, week_number], map: "unique_season_week")
 }
+
+model standings {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  week_id   Int
+  score     Int      // total score for the week
+  created_at DateTime @default(now())
+
+  user      users    @relation(fields: [user_id], references: [id])
+  week      weeks    @relation(fields: [week_id], references: [id])
+
+  @@unique([user_id, week_id]) // one score per user per week
+}
+
 
 enum picks_winner {
   HOME

@@ -68,15 +68,7 @@ export async function getWeekSchedule({ weekId }) {
   });
 }
 
-export async function createWeek({
-  season,
-  week_number,
-  open_at,
-  lock_at,
-  is_finalized,
-  created_at,
-  user,
-}) {
+export async function createWeek({ season, week_number }) {
   // // Step 1: Validate that the user is the ADMIN
   // //req.user.role retrieved from the JWT
   // if (user.role !== "ADMIN") {
